@@ -9,7 +9,27 @@ interface Props {
   content: string
 }
 
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim()
+}
+
+function makeHeading(Tag: 'h1' | 'h2' | 'h3' | 'h4') {
+  return function Heading({ children }: { children?: React.ReactNode }) {
+    const id = slugify(String(children))
+    return <Tag id={id}>{children}</Tag>
+  }
+}
+
 const components: Components = {
+  h1: makeHeading('h1'),
+  h2: makeHeading('h2'),
+  h3: makeHeading('h3'),
+  h4: makeHeading('h4'),
   code({ className, children, ...props }) {
     const match = /language-(\w+)/.exec(className || '')
     const codeString = String(children).replace(/\n$/, '')
