@@ -30,10 +30,12 @@ const components: Components = {
   h2: makeHeading('h2'),
   h3: makeHeading('h3'),
   h4: makeHeading('h4'),
-  code({ className, children, ...props }) {
+  code({ className, children, node, ...props }) {
     const match = /language-(\w+)/.exec(className || '')
     const codeString = String(children).replace(/\n$/, '')
+    const isBlock = node?.position && codeString.includes('\n')
 
+    // Language-tagged code block → syntax highlight
     if (match) {
       return (
         <SyntaxHighlighter
@@ -47,15 +49,44 @@ const components: Components = {
       )
     }
 
-    // Check if this looks like an ASCII diagram (multi-line with box chars)
-    if (codeString.includes('\n') && /[┌┐└┘│─├┤┬┴┼╔╗╚╝║═╠╣╦╩╬┏┓┗┛┃━┣┫┳┻╋\+\-\|]/.test(codeString)) {
+    // Multi-line block code → detect language or render as plain block
+    if (isBlock) {
+      // ASCII diagram detection
+      if (/[┌┐└┘│─├┤┬┴┼╔╗╚╝║═╠╣╦╩╬┏┓┗┛┃━┣┫┳┻╋]/.test(codeString)) {
+        return (
+          <pre className="ascii-diagram">
+            <code>{codeString}</code>
+          </pre>
+        )
+      }
+
+      // Auto-detect language for syntax highlighting
+      let lang = 'text'
+      if (/^\s*(SELECT|INSERT|UPDATE|DELETE|CREATE|ALTER|DROP)\b/im.test(codeString)) {
+        lang = 'sql'
+      } else if (/^\s*(POST|GET|PUT|DELETE|PATCH)\s+\//.test(codeString)) {
+        lang = 'http'
+      } else if (/[{}]\s*$/.test(codeString) && /"[\w]+":\s/.test(codeString)) {
+        lang = 'json'
+      } else if (/^\s*(def |class |import |from |print\()/.test(codeString)) {
+        lang = 'python'
+      } else if (/^\s*(function |const |let |var |=>|import )/.test(codeString)) {
+        lang = 'javascript'
+      }
+
       return (
-        <pre className="ascii-diagram">
-          <code>{codeString}</code>
-        </pre>
+        <SyntaxHighlighter
+          style={oneDark}
+          language={lang}
+          PreTag="div"
+          customStyle={{ borderRadius: '8px', fontSize: '0.85rem' }}
+        >
+          {codeString}
+        </SyntaxHighlighter>
       )
     }
 
+    // Inline code
     return (
       <code className={`inline-code ${className || ''}`} {...props}>
         {children}

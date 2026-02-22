@@ -38,8 +38,8 @@
   --border: #30363d;
   --accent: #58a6ff;
   --accent-hover: #79b8ff;
-  --accent-bg: #161b22;
-  --code-bg: #161b22;
+  --accent-bg: #1a2332;
+  --code-bg: #1c2333;
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
